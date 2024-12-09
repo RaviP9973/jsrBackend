@@ -5,20 +5,8 @@ const fs = require("fs");
 const path = require("path");
 const {imageUpload} = require("../controllers/imageUpload")
 
-const cloudinary = require("cloudinary")
-
-const uploadImageToCloudinary = async (imagePath) => {
-  try {
-    const uploadResult = await cloudinary.uploader.upload(imagePath, { folder: "segmented_images" });
-    return uploadResult; // Resolving with the upload result
-  } catch (error) {
-    console.error("Cloudinary upload error:", error);
-    throw error; // Rejecting the promise with the error if it fails
-  }
-};
 exports.genrateImage = async (req, res) => {
   try {
-    console.log("inside the generate image");
 
     // Ensure a file was uploaded
     if (!req.file) {
@@ -40,7 +28,7 @@ exports.genrateImage = async (req, res) => {
     let scriptOutput = "";
 
     pythonProcess.stdout.on("data", (data) => {
-      console.log(data);
+      // console.log(data);
       scriptOutput += data.toString();
     });
 
@@ -56,17 +44,10 @@ exports.genrateImage = async (req, res) => {
           // Define the path to the segmented image file
           const segmentedImagePath = path.join(__dirname, '../..', result.segmented_image_path);
 
-          console.log("before cloudinary")
 
-          const uploadResult = await uploadImageToCloudinary(segmentedImagePath);
-
-          console.log("after cloudinary")
-          console.log(uploadResult)
           res.status(200).json({
             message: "Image processed and uploaded to cloudinary successfully!",
-            // scriptOutput,
             result,
-            imageUrl: uploadResult.secure_url,
           });
         } catch (error) {
           console.error("Error parsing script output:", error.message);
